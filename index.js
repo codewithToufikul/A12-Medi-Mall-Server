@@ -27,11 +27,18 @@ async function run() {
   try {
     await client.connect();
     const medicineCollection = client.db("MediMallDB").collection("medicineCollection");
+    const cartMedicineCollection = client.db("MediMallDB").collection("cartMedicineCollection");
     
     app.get("/medicine", async(req, res) => {
         const result = await medicineCollection.find().toArray();
         res.send(result)
       });
+
+    app.post("/cart", async(req, res)=>{
+      const medicine = req.body;
+      const result = await cartMedicineCollection.insertOne(medicine);
+      res.send(result)
+    })
 
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
