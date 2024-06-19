@@ -114,6 +114,60 @@ async function run() {
     res.send(result);
   });
 
+  app.post("/category", async(req, res)=>{
+    const category = req.body;
+    const result = await catergoryCollection.insertOne(category)
+    res.send(result)
+  })
+
+  app.delete("/category/:id", async(req, res)=>{
+    const id = req.params.id;
+    const query = {_id: new ObjectId(id)}
+    const result = await catergoryCollection.deleteOne(query);
+    res.send(result)
+  })
+
+ // Update a category (PATCH method)
+ app.patch("/category/:id", async (req, res) => {
+  const id = req.params.id;
+  const { categoryName, image } = req.body;
+  const filter = { _id: new ObjectId(id) };
+  const updateDoc = {
+    $set: {
+      categoryName: categoryName,
+      image: image,
+    },
+  };
+  
+  try {
+    const result = await catergoryCollection.updateOne(filter, updateDoc);
+    res.send(result);
+  } catch (error) {
+    console.error('Error updating category:', error);
+    res.status(500).json({ error: 'Failed to update category' });
+  }
+});
+
+// Update a category (PUT method)
+app.put("/category/:id", async (req, res) => {
+  const id = req.params.id;
+  const { categoryName, image } = req.body;
+  const filter = { _id: new ObjectId(id) };
+  const updateDoc = {
+    $set: {
+      categoryName: categoryName,
+      image: image,
+    },
+  };
+    
+    try {
+      const result = await catergoryCollection.updateOne(filter, updateDoc);
+      res.send(result);
+    } catch (error) {
+      console.error('Error updating category:', error);
+      res.status(500).json({ error: 'Failed to update category' });
+    }
+  });
 
   app.post("/users", async(req, res)=>{
     const user = req.body;
