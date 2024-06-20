@@ -132,6 +132,12 @@ async function run() {
     res.send(result);
   });
 
+  app.post("/medicine", async(req, res)=>{
+    const medicine = req.body;
+    const result = await medicineCollection.insertOne(medicine)
+    res.send(result)
+  })
+
   app.post("/cart", async (req, res) => {
     const medicine = req.body;
     const result = await cartMedicineCollection.insertOne(medicine);
@@ -185,8 +191,8 @@ async function run() {
     res.send({ clientSecret: paymentIntent.client_secret });
   });
 
-  app.post("/save-payment-details", verifyToken, async (req, res) => {
-    const { paymentIntent, userEmail, status, date } = req.body;
+  app.post("/save-payment-details", async (req, res) => {
+    const { paymentIntent, userEmail, status, date, sellerEmail, items } = req.body;
     const paymentRecord = {
       paymentIntentId: paymentIntent.id,
       amount: paymentIntent.amount,
@@ -195,6 +201,9 @@ async function run() {
       email: userEmail,
       created: paymentIntent.created,
       date: date,
+      sellerEmail: sellerEmail,
+      items: items,
+
     };
     const result = await paymentCollections.insertOne(paymentRecord);
     res.send(result);
