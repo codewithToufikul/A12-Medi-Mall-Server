@@ -91,6 +91,28 @@ async function run() {
       res.status(500).send({ message: 'Failed to fetch admin status' });
     }
   });
+
+  app.get('/users/seller/:email', verifyToken, async (req, res) => {
+    const email = req.params.email;
+  
+    if (email !== req.decoded.email) {
+      return res.status(403).send({ message: 'Forbidden access' });
+    }
+  
+    try {
+      const query = { email: email };
+      const user = await usersCollections.findOne(query);
+      let seller = false;
+      if (user) {
+        seller = user.role === 'seller';
+      }
+      res.send({ seller });
+    } catch (error) {
+      console.error('Error fetching seller status:', error);
+      res.status(500).send({ message: 'Failed to fetch seller status' });
+    }
+});
+
   
   
 
@@ -116,21 +138,21 @@ async function run() {
     res.send(result);
   });
 
-  app.get("/carts", async (req, res) => {
+  app.get("/carts", verifyToken, async (req, res) => {
     const email = req.query.email;
     const emailQuery = { userEmail: email };
     const result = await cartMedicineCollection.find(emailQuery).toArray();
     res.send(result);
   });
 
-  app.delete("/cart/:id", async (req, res) => {
+  app.delete("/cart/:id", verifyToken, async (req, res) => {
     const id = req.params.id;
     const query = { _id: new ObjectId(id) };
     const result = await cartMedicineCollection.deleteOne(query);
     res.send(result);
   });
 
-  app.patch("/cart/:id/increase", async (req, res) => {
+  app.patch("/cart/:id/increase", verifyToken, async (req, res) => {
     const id = req.params.id;
     const query = { _id: new ObjectId(id) };
     const updateDoc = { $inc: { quantity: 1 } };
@@ -138,7 +160,7 @@ async function run() {
     res.send(result);
   });
 
-  app.patch("/cart/:id/decrease", async (req, res) => {
+  app.patch("/cart/:id/decrease", verifyToken, async (req, res) => {
     const id = req.params.id;
     const query = { _id: new ObjectId(id) };
     const updateDoc = { $inc: { quantity: -1 } };
@@ -146,7 +168,7 @@ async function run() {
     res.send(result);
   });
 
-  app.delete("/cart", async (req, res) => {
+  app.delete("/cart", verifyToken, async (req, res) => {
     const email = req.query.email;
     const emailQuery = { userEmail: email };
     const result = await cartMedicineCollection.deleteMany(emailQuery);
@@ -163,8 +185,8 @@ async function run() {
     res.send({ clientSecret: paymentIntent.client_secret });
   });
 
-  app.post("/save-payment-details", async (req, res) => {
-    const { paymentIntent, userEmail, status } = req.body;
+  app.post("/save-payment-details", verifyToken, async (req, res) => {
+    const { paymentIntent, userEmail, status, date } = req.body;
     const paymentRecord = {
       paymentIntentId: paymentIntent.id,
       amount: paymentIntent.amount,
@@ -172,17 +194,18 @@ async function run() {
       status: status,
       email: userEmail,
       created: paymentIntent.created,
+      date: date,
     };
     const result = await paymentCollections.insertOne(paymentRecord);
     res.send(result);
   });
 
-  app.get("/payment-history", async (req, res) => {
+  app.get("/payment-history", verifyToken, async (req, res) => {
     const result = await paymentCollections.find().toArray();
     res.send(result);
   });
 
-  app.patch("/payment-history/:id/accept", async (req, res) => {
+  app.patch("/payment-history/:id/accept", verifyToken, verifyAdmin, async (req, res) => {
     const id = req.params.id;
     const filter = { _id: new ObjectId(id) };
     const updateDoc = {
@@ -224,18 +247,18 @@ async function run() {
     res.send(result);
   });
 
-  app.get("/category", async (req, res) => {
+  app.get("/category",  async (req, res) => {
     const result = await catergoryCollection.find().toArray();
     res.send(result);
   });
 
-  app.post("/category", async (req, res) => {
+  app.post("/category", verifyToken, async (req, res) => {
     const category = req.body;
     const result = await catergoryCollection.insertOne(category);
     res.send(result);
   });
 
-  app.delete("/category/:id", async (req, res) => {
+  app.delete("/category/:id",  verifyToken, async (req, res) => {
     const id = req.params.id;
     const query = { _id: new ObjectId(id) };
     const result = await catergoryCollection.deleteOne(query);
@@ -243,7 +266,7 @@ async function run() {
   });
 
   // Update a category (PATCH method)
-  app.patch("/category/:id", async (req, res) => {
+  app.patch("/category/:id", verifyAdmin, verifyToken, async (req, res) => {
     const id = req.params.id;
     const { categoryName, image } = req.body;
     const filter = { _id: new ObjectId(id) };
@@ -264,7 +287,7 @@ async function run() {
   });
 
   // Update a category (PUT method)
-  app.put("/category/:id", async (req, res) => {
+  app.put("/category/:id", verifyToken, async (req, res) => {
     const id = req.params.id;
     const { categoryName, image } = req.body;
     const filter = { _id: new ObjectId(id) };
