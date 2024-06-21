@@ -195,7 +195,7 @@ async function run() {
   });
 
   app.post("/save-payment-details", async (req, res) => {
-    const { paymentIntent, userEmail, status, date, sellerEmail, items } = req.body;
+    const { paymentIntent, userEmail, status, date, sellerEmail, medicineName } = req.body;
     const paymentRecord = {
       paymentIntentId: paymentIntent.id,
       amount: paymentIntent.amount,
@@ -205,7 +205,7 @@ async function run() {
       created: paymentIntent.created,
       date: date,
       sellerEmail: sellerEmail,
-      items: items,
+      medicineName: medicineName,
 
     };
     const result = await paymentCollections.insertOne(paymentRecord);
@@ -279,10 +279,10 @@ app.patch("/advice/:id", verifyToken, async (req, res) => {
     res.send(result);
   });
 
-  app.delete("/category/:id",  verifyToken, async (req, res) => {
+  app.delete("/medicine/:id",  verifyToken, async (req, res) => {
     const id = req.params.id;
     const query = { _id: new ObjectId(id) };
-    const result = await catergoryCollection.deleteOne(query);
+    const result = await medicineCollection.deleteOne(query);
     res.send(result);
   });
 
@@ -327,6 +327,29 @@ app.patch("/advice/:id", verifyToken, async (req, res) => {
       res.status(500).json({ error: 'Failed to update category' });
     }
   });
+
+  app.put("/medicine/:id", async(req, res)=>{
+    const id = req.params.id
+    const {medicineName, genericName, medicineCompany,  perUnitPrice, medicineImage, massUnit, shortDescription, discountPercentage, category, sellerEmail} = req.body;
+    const filter = { _id: new ObjectId(id) };
+    const updatedDoc ={
+     $set: {
+      medicineName: medicineName,
+      genericName: genericName,
+      medicineCompany: medicineCompany,
+      shortDescription: shortDescription,
+      perUnitPrice: perUnitPrice,
+      medicineImage: medicineImage,
+      massUnit: massUnit,
+      discountPercentage: discountPercentage,
+      category: category,
+      sellerEmail: sellerEmail,
+     }
+    }
+    const result = medicineCollection.updateOne(filter, updatedDoc);
+    res.send(result)
+
+  })
 
   app.patch("/users/:id", async (req, res) => {
     const id = req.params.id;
