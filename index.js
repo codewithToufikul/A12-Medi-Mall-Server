@@ -243,21 +243,30 @@ async function run() {
     res.send(result);
   });
 
-  app.patch("/advices/:id/toggle", async (req, res) => {
-    const id = req.params.id;
-    const advice = await adviceCollections.findOne({ _id: new ObjectId(id) });
-    if (!advice) {
-      return res.status(404).send({ message: "Advice not found" });
-    }
-    const updatedVisibility = !advice.isVisible;
-    const updateDoc = {
-      $set: {
-        isVisible: updatedVisibility,
-      },
-    };
-    const result = await adviceCollections.updateOne({ _id: new ObjectId(id) }, updateDoc);
+ app.post("/advice", async(req, res)=>{
+  const product = req.body;
+  const result = await adviceCollections.insertOne(product)
+  res.send(result)
+ })
+
+ // Update advice status
+app.patch("/advice/:id", verifyToken, async (req, res) => {
+  const id = req.params.id;
+  const { status } = req.body;
+  const filter = { _id: new ObjectId(id) };
+  const updateDoc = {
+    $set: { status: status },
+  };
+
+  try {
+    const result = await adviceCollections.updateOne(filter, updateDoc);
     res.send(result);
-  });
+  } catch (error) {
+    console.error('Error updating advice status:', error);
+    res.status(500).json({ error: 'Failed to update advice status' });
+  }
+});
+
 
   app.get("/category",  async (req, res) => {
     const result = await catergoryCollection.find().toArray();
