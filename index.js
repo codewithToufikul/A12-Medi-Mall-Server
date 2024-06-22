@@ -249,7 +249,6 @@ async function run() {
   res.send(result)
  })
 
- // Update advice status
 app.patch("/advice/:id", verifyToken, async (req, res) => {
   const id = req.params.id;
   const { status } = req.body;
@@ -286,7 +285,6 @@ app.patch("/advice/:id", verifyToken, async (req, res) => {
     res.send(result);
   });
 
-  // Update a category (PATCH method)
   app.patch("/category/:id", verifyAdmin, verifyToken, async (req, res) => {
     const id = req.params.id;
     const { categoryName, image } = req.body;
@@ -307,7 +305,6 @@ app.patch("/advice/:id", verifyToken, async (req, res) => {
     }
   });
 
-  // Update a category (PUT method)
   app.put("/category/:id", verifyToken, async (req, res) => {
     const id = req.params.id;
     const { categoryName, image } = req.body;
