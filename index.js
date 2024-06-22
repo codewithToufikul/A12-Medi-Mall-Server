@@ -161,7 +161,7 @@ async function run() {
     res.send(result);
   });
 
-  app.patch("/cart/:id/increase", verifyToken, async (req, res) => {
+  app.patch("/cart/:id/increase",  async (req, res) => {
     const id = req.params.id;
     const query = { _id: new ObjectId(id) };
     const updateDoc = { $inc: { quantity: 1 } };
@@ -169,7 +169,7 @@ async function run() {
     res.send(result);
   });
 
-  app.patch("/cart/:id/decrease", verifyToken, async (req, res) => {
+  app.patch("/cart/:id/decrease",  async (req, res) => {
     const id = req.params.id;
     const query = { _id: new ObjectId(id) };
     const updateDoc = { $inc: { quantity: -1 } };
@@ -361,7 +361,7 @@ app.patch("/advice/:id", verifyToken, async (req, res) => {
     res.send(result);
   });
 
-  console.log("Connected to MongoDB successfully!");
+  // console.log("Connected to MongoDB successfully!");
 }
 
 run().catch(console.dir);
